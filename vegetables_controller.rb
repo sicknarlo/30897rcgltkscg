@@ -1,7 +1,8 @@
 class VegetablesController < ApplicationController
 
   def index
-    @vegetables = Vegetables.all
+    # The vegetagle model is always singular
+    @vegetables = Vegetable.all
   end
 
   def show
@@ -17,8 +18,11 @@ class VegetablesController < ApplicationController
     if @vegetable.save
       flash[:success] = "That sounds like a tasty vegetable!"
       redirect_to @vegetable
-    end
+    else
+    # A glash message should be used to indicate failure as well.
+    flash[:error] = "There was a problem creating the new vegetable!"
     redirect_to :new
+  end
   end
 
   def edit
@@ -26,7 +30,8 @@ class VegetablesController < ApplicationController
   end
 
   def update
-    @vegetable = Vegetable.new(whitelisted_vegetable_params)
+    # Use the find method to find an existing object
+    @vegetable = Vegetable.find(whitelisted_vegetable_params)
     if @vegetable.update
       flash[:success] = "A new twist on an old favorite!"
       redirect_to @vegetable
@@ -36,17 +41,26 @@ class VegetablesController < ApplicationController
     end
   end
 
-  def delete
+  # Method is destroy
+  def destroy
     @vegetable = Vegetable.find(params[:id])
-    @vegetable.destroy
-    flash[:success] = "That veggie is trashed."
-    redirect_to @vegetable
+    # This should be included in an if logic to accomodate for potential failure
+    if @vegetable.destroy
+      flash[:success] = "That veggie is trashed."
+      # Redirects to the index
+      redirect_to vegetables_path
+    else
+      # Flash error if fails, redirects back to destroy
+      flash[:error] = "There was a problem trashing that veggie."
+      render :destroy
+    end
   end
 
   private
 
   def whitelisted_vegetable_params
-    require(:vegetable).permit(:name, :color, :rating, :latin_name)
+    # Must pass params as an argument
+    params.require(:vegetable).permit(:name, :color, :rating, :latin_name)
   end
 
 end
